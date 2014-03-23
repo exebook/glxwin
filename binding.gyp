@@ -6,7 +6,7 @@
 	"sources": [ "glxwin.cpp" ],
 	"cflags": ["-O0 -w -Wfatal-errors -fshort-wchar -g"],
 	"defines": ["UNIX"],
-	"libraries": ["-lfreetype", "-lv8", "-lX11", "-lGL", "-lutil"]
+	"libraries": ["-lfreetype", "-lv8", "-lX11", "-lGL", "-lutil", "-lXcursor"]
     }
   ],"variables" : { "clang" : 1 }
 }

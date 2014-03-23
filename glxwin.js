@@ -24,6 +24,7 @@ TGLXWin.can.colorText = function(x, y, w, h, TXT, CLR) { glxwin.color_text(this.
 TGLXWin.can.getXWindowHandle = function() { return glxwin.get_xwindow_handle(this.handle) }//not tested
 TGLXWin.can.paintBegin = function() { glxwin.paintBegin(this.handle) }
 TGLXWin.can.paintEnd = function() { glxwin.paintEnd(this.handle) }
+TGLXWin.can.setCursor = function(cursor) { glxwin.setCursor(this.handle, cursor) }
 
 glxwin.findObject = function(handle) {
 	for (var i = 0; i < this.all.length; i++) if (this.all[i].handle == handle) return this.all[i]

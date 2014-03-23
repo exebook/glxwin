@@ -20,6 +20,7 @@
 
 						#include <X11/X.h>
 						#include <X11/Xlib.h>
+						#include <X11/Xcursor/Xcursor.h>
 						#include <GL/glx.h>
 						#include <GL/gl.h>
 							#include <ft2build.h>
@@ -66,6 +67,7 @@ struct mess {
 	arr <win*> all;
 	list <timer> timers; int nearest_timer;
 	list<yaglfont::Font> Fonts;
+	Cursor Cursors[10];
 
 	mess():d(0), nearest_timer(0) { }
 	~mess() {
@@ -199,12 +201,17 @@ void create() {
 		| StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask
 		| ButtonReleaseMask |KeymapStateMask | PointerMotionMask | VisibilityChangeMask
 		| KeymapStateMask | EnterWindowMask | LeaveWindowMask | FocusChangeMask
+//		| PropertyChangeMask
 	);
 	set_icon();
 	XSaveContext(MESS.d, window, MESS.xcontext, (XPointer)this);
 	MESS.all << this;
 	creating();
 	//	XSetWMProtocols(d, W.win, &(delMsg), 1);
+}
+
+void setCursor(int n) {
+	XDefineCursor (MESS.d, window, MESS.Cursors[n]);
 }
 
 void show() {
@@ -354,6 +361,14 @@ void mess::init() {
     for (i = 0; i < styles->count_styles; i++) {
 //        printf("style %d\n", styles->supported_styles[i]);
     }
+
+	Cursors[0] = XcursorLibraryLoadCursor(MESS.d, "x-cursor");
+	Cursors[1] = XcursorLibraryLoadCursor(MESS.d, "xterm");
+	Cursors[2] = XcursorLibraryLoadCursor(MESS.d, "v_double_arrow");
+	Cursors[3] = XcursorLibraryLoadCursor(MESS.d, "move");
+	Cursors[4] = XcursorLibraryLoadCursor(MESS.d, "hand1");
+	Cursors[5] = XcursorLibraryLoadCursor(MESS.d, "hand2");
+	Cursors[6] = XcursorLibraryLoadCursor(MESS.d, "grabbing");
 }
 
 void mess::close() {
@@ -494,6 +509,7 @@ bool mess::run() {
 			down = event.type == ButtonPress;
 			B = -1;
 			d = event.xbutton.button;
+			if ((d == 4 || d == 5) && !down) break; // wheel
 			if (d == 4) B = 3, down = false;
 			if (d == 5) B = 3;
 			if (d == 1) B = 0;
@@ -511,6 +527,7 @@ bool mess::run() {
 				} else doubleClickTime = time1000(), doubleClickX = x, doubleClickY = y;
 			}
 			if (B == 10) wnd->mouse(down, 0, x, y);
+			//if (B == 10 && !down) break; 
 			wnd->mouse(down, B, x, y);
 			break;
 		case KeymapNotify:

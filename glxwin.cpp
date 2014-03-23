@@ -531,11 +531,60 @@ Handle<Value> Method(const Arguments& args) {
   return scope.Close(String::New("GLXWIN!"));
 }
 
+function(clipGet) {
+	HandleScope handle_scope;
+	int N = 0, X = 0, i;
+	v8win *W = (v8win*) HANDLE(a[0]);
+//	if (a[0] != Undefined()) X = NUMBER(a[0]);
+	X = XInternAtom (MESS.d, "CLIPBOARD", 0);
+
+	Atom type;
+	int format, result;
+	unsigned long len, dummy, bytes_left;
+	unsigned char *data;
+  result = XGetWindowProperty(MESS.d, W->window, 31, 0, 0, //off, len
+                0, // Delete 0==FALSE
+                AnyPropertyType, //flag
+                &type, // return type
+                &format, // return format
+                &len, &bytes_left, //that
+                &data);
+	printf("%i %i %i %i %i %s\n", bytes_left, (int) type, format, (int) dummy, (int) len, data);
+                
+                        XGetWindowProperty(MESS.d, W->window, 31,
+                0, 5, 0, AnyPropertyType, &type, &format, &len, &dummy, &data);
+	printf("%i %i %i %i %s\n", (int) type, format, (int) dummy, (int) len, data);
+
+
+	char *c;
+    XSetSelectionOwner(MESS.d, X, W->window, CurrentTime);
+//	for (i = 0; i < 10; i++) {
+		c = XFetchBuffer(MESS.d, &N, X);
+//		XRotateBuffers(MESS.d, 1);
+		printf("i=%i, N=%i\n", i, N);
+//	}
+	str s; s(N); move(c, *s, !s);
+	printf("3\n");
+	wstr w = utf2w(s);
+	printf("4\n");
+	return String::New((uint16_t*)*w, !w);
+}
+
+function(setCursor) {
+	HandleScope handle_scope;
+	v8win *W = (v8win*) HANDLE(a[0]);
+	int cursor = NUMBER(a[1]);
+	W->setCursor(cursor);
+	return Undefined();
+}
+
+
 void init(Handle<Object> exports) {
 	exports->Set(String::NewSymbol("hello"), FunctionTemplate::New(Method)->GetFunction());
 //      context->Global()
 	#define function(name) exports->Set(String::NewSymbol(#name), FunctionTemplate::New(name)->GetFunction());
 	function(register_callbacks)
+	function (clipGet)
 //	function(yaui_platform)
 //	function(print)
 /*
@@ -583,6 +632,7 @@ void init(Handle<Object> exports) {
 //	bind_functions(exports);
 	function (paintBegin)
 	function (paintEnd)
+	function (setCursor)
 }
 
 NODE_MODULE(glxwin, init)
