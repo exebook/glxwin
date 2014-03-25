@@ -77,6 +77,7 @@ struct mess {
 
 	void init();
 	bool run();
+	void run_renders();
 	void close();
 
 	win* handle2win(Drawable handle) {
@@ -399,6 +400,13 @@ void mess::process_timers() {
 	}
 }
 
+void mess::run_renders() {
+	each (i, MESS.all) if (MESS.all[i]->renders > 0) {
+		MESS.all[i]->renders = 0;
+		MESS.all[i]->render();
+	}
+}
+
 	char keyz[1024] = {0};
    bool quit = false;
 	win *wnd;
@@ -406,26 +414,10 @@ void mess::process_timers() {
    XEvent event, nev;
 
 bool mess::run() {
-	each (i, MESS.all) if (MESS.all[i]->renders > 0) {
-		MESS.all[i]->renders = 0;
-		MESS.all[i]->render();
-	}
    if (!quit) {
 		if (!XPending(MESS.d)) return quit;
-
-/*      while (true) {
-			if (XPending(MESS.d)) break;
-			usleep(1000);
-			if (XPending(MESS.d)) break;
-			each (i, MESS.all) if (MESS.all[i]->renders > 0) {
-				MESS.all[i]->renders = 0;
-				MESS.all[i]->render();
-			}
-			MESS.process_timers();
-      }*/
 		XNextEvent(MESS.d, &event);
 
-  //		printf("Event: %i\n", event.type);
 		switch(event.type) {
       case ConfigureNotify:
 			wnd = MESS.handle2win(event.xconfigure.window);

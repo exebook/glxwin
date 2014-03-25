@@ -217,7 +217,7 @@ function (create_win) {
 	HandleScope handle_scope;
 	v8win *parent = (v8win*) HANDLE(a[0]);
 	v8win *W = new v8win;
-	wstr fontName = "/home/ya/.deodar/f/fixed7.ttf";
+	wstr fontName = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSansMono.ttf";
 	int fontSize = 18;
 	if (a[1] != Undefined()) fontName = WSTR(a[1]);
 	if (a[2] != Undefined()) fontSize = NUMBER(a[2]);
@@ -233,6 +233,12 @@ function (run) {
 	HandleScope handle_scope;
 	bool result = MESS.run();
 	return Boolean::New(result);
+}
+
+function (run_renders) {
+	HandleScope handle_scope;
+	MESS.run_renders();
+	return Undefined();
 }
 
 function (show) {
@@ -617,6 +623,7 @@ void init(Handle<Object> exports) {
 	function(show)
 	function(hide)
 	function(run)
+	function(run_renders)
 	function(print)
 	function(repaint)
 	function(force_repaint)

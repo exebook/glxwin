@@ -70,9 +70,15 @@ glxwin.register_callbacks(glxwin)
 glxwin.mainLoop = function() {
 	function go() {
 		glxwin.run()
-		setTimeout(function() { setImmediate(go) }, 1)
+//		setTimeout(function() { setImmediate(go) }, 1)
+		setImmediate(go)
+	}
+	function rend() {
+		glxwin.run_renders()
+		setTimeout(rend, 10)
 	}
 	setImmediate(go)
+	setImmediate(rend)
 }
 
 module.exports = glxwin
@@ -83,8 +89,8 @@ glxwin = require('./glxwin/glxwin.js')
 
 var w = TGLXWin.create()
 w.setXYWH(0, 0, 100, 100)
-w.onKey = function(char, key, down, physical) {
-	console.log(down, char, key, physical)
+w.onKey = function(K) {
+	console.log(K)
 }
 w.onPaint = function() {
 	w.crect(0, 0, 1000, 1000, 0xff000000)
