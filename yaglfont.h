@@ -1,7 +1,8 @@
 namespace yaglfont {
 	double FIX = 1.0;
 	FT_Library  library = 0;
-	struct char_glass { char_glass() : loaded(false) {};bool loaded; double full, left, ascent, id, w, h; double x1, x2, y1, y2; };
+	struct char_glass { char_glass() : loaded(false) {};
+		bool loaded; double full, left, ascent, id, w, h; double x1, x2, y1, y2; };
 
 	byte getpix(byte *A, int w, int x, int y) {
 		return A[x + y * w];
@@ -46,7 +47,7 @@ namespace yaglfont {
 		}
 
 		void add(char_glass *G, byte *A) {
-			if ((add_at_x + G->w) > wh) {
+			if ((add_at_x + G->w) >= wh-10) { // can -10 be zero or -1?
 				add_at_x = 0, add_at_y += line_h;
 				if (add_at_y + line_h > wh) printf("font does not fit into the texture\n"), print(), exit(1);
 			}
@@ -59,7 +60,8 @@ namespace yaglfont {
 		}
 
 		void print() {
-			printf("2D{%i of %i}, size: [%i/%i] position: %i:%i = %f %% space\n", added_glyphs, total_glyphs, wh, line_h, add_at_y, add_at_x,
+			printf("2D{%i of %i}, size: [%i/%i] position: %i:%i = %f %% space\n", 
+				added_glyphs, total_glyphs, wh, line_h, add_at_y, add_at_x,
 			(double)(add_at_y+line_h) / (wh / 100) );
 		}
 	};
@@ -108,7 +110,7 @@ namespace yaglfont {
 			char_glass *G = db[ch];
 			FT_GlyphSlot slot;
 			int e;
-			e = FT_Load_Char(face, ch, FT_LOAD_DEFAULT );
+			e = FT_Load_Char(face, ch, FT_LOAD_TARGET_LIGHT);//FT_LOAD_DEFAULT );
 			e = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
 			slot = face->glyph;
 			G->w = slot->bitmap.width, G->h = slot->bitmap.rows;
@@ -133,7 +135,9 @@ namespace yaglfont {
 			F.fonttex.add(G, PIX);
 			glBindTexture( GL_TEXTURE_2D, F.T );
 			int P = 4; while (P < G->w) P <<= 1; // artifacts if P=1,2
-			int Q = 1; while (Q < G->h) Q <<= 1;
+			while (P < G->h) P <<= 1;
+			int Q = P;
+			//int Q = 4; while (Q < G->h) Q <<= 1;
 			byte *ZOOM = new byte[P*Q];
 //			for (int i = 0; i < P*Q; i ++) ZOOM[i] = 0xff;
 			zoom(PIX, ZOOM, G->w, G->h, P, Q);

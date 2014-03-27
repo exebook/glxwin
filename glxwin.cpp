@@ -40,7 +40,8 @@ using namespace v8;
 //#include "nativeutil.h"
 
 Persistent<Function> onChar, onCursor, onMouse, onPaint, onKey, onTimer, onSize, onPipe, onFocus;
-Persistent<Object> glxwin;
+Persistent<Object> glxwin, node_exports; // наверное это одно и то же
+Persistent<Array> callbacks;
 
 Persistent<Context> context;
 Handle<Value> ARGS[10];
@@ -109,14 +110,27 @@ struct inherit(v8win, win) {
 	}
 	on_key {
 		HandleScope handle_scope;
-//		wstr Char; if (charcode != 0) Char(1), Char[0] = charcode;
-		ARGS[0] = Number::New(HANDLE(this));
-		ARGS[1] = Boolean::New(down);
-		ARGS[2] = Undefined();
-		if (charcode != 0) ARGS[2] = String::New((uint16_t*)&charcode, 1);
-		ARGS[3] = Number::New(key);
-		ARGS[4] = Number::New(physical);
-		js_call(onKey, 5);
+//		ARGS[0] = Number::New(HANDLE(this));
+//		ARGS[1] = Boolean::New(down);
+//		ARGS[2] = Undefined();
+//		if (charcode != 0) ARGS[2] = String::New((uint16_t*)&charcode, 1);
+//		ARGS[3] = Number::New(key);
+//		ARGS[4] = Number::New(physical);
+
+		Handle<Object> B = Object::New();
+		B->Set(String::New("call"), String::New("onKey"));
+		B->Set(String::New("handle"), Number::New(HANDLE(this)));
+		B->Set(String::New("down"), Boolean::New(down));
+		if (charcode != 0) B->Set(String::New("char"), String::New((uint16_t*)&charcode, 1));
+		B->Set(String::New("key"), Integer::New(key));
+		B->Set(String::New("physical"), Boolean::New(physical));
+//		Context::GetCurrent()->Global()->Set(String::New("glxwin_key"), B);
+		int len = callbacks->Length();
+		callbacks->Set(len, B);
+//		printf("LEN %i\n", len);
+//		node_exports
+//		return handle_scope.Close(B);
+//	js_call(onKey, 5);
 	}
 //	on_char {
 //		HandleScope handle_scope;
@@ -229,15 +243,15 @@ function (create_win) {
 	return Number::New(HANDLE(W));
 }
 
-function (run) {
+function (step) {
 	HandleScope handle_scope;
-	bool result = MESS.run();
+	bool result = MESS.step();
 	return Boolean::New(result);
 }
 
-function (run_renders) {
+function (step_renders) {
 	HandleScope handle_scope;
-	MESS.run_renders();
+	MESS.step_renders();
 	return Undefined();
 }
 
@@ -537,45 +551,6 @@ Handle<Value> Method(const Arguments& args) {
   return scope.Close(String::New("GLXWIN!"));
 }
 
-function(clipGet) {
-	HandleScope handle_scope;
-	int N = 0, X = 0, i;
-	v8win *W = (v8win*) HANDLE(a[0]);
-//	if (a[0] != Undefined()) X = NUMBER(a[0]);
-	X = XInternAtom (MESS.d, "CLIPBOARD", 0);
-
-	Atom type;
-	int format, result;
-	unsigned long len, dummy, bytes_left;
-	unsigned char *data;
-  result = XGetWindowProperty(MESS.d, W->window, 31, 0, 0, //off, len
-                0, // Delete 0==FALSE
-                AnyPropertyType, //flag
-                &type, // return type
-                &format, // return format
-                &len, &bytes_left, //that
-                &data);
-	printf("%i %i %i %i %i %s\n", bytes_left, (int) type, format, (int) dummy, (int) len, data);
-                
-                        XGetWindowProperty(MESS.d, W->window, 31,
-                0, 5, 0, AnyPropertyType, &type, &format, &len, &dummy, &data);
-	printf("%i %i %i %i %s\n", (int) type, format, (int) dummy, (int) len, data);
-
-
-	char *c;
-    XSetSelectionOwner(MESS.d, X, W->window, CurrentTime);
-//	for (i = 0; i < 10; i++) {
-		c = XFetchBuffer(MESS.d, &N, X);
-//		XRotateBuffers(MESS.d, 1);
-		printf("i=%i, N=%i\n", i, N);
-//	}
-	str s; s(N); move(c, *s, !s);
-	printf("3\n");
-	wstr w = utf2w(s);
-	printf("4\n");
-	return String::New((uint16_t*)*w, !w);
-}
-
 function(setCursor) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -584,13 +559,15 @@ function(setCursor) {
 	return Undefined();
 }
 
-
 void init(Handle<Object> exports) {
+	node_exports = Persistent<Object>::New(Handle<Object>::Cast(exports));
 	exports->Set(String::NewSymbol("hello"), FunctionTemplate::New(Method)->GetFunction());
+	callbacks = Persistent<Array>::New(Handle<Array>::Cast(Array::New(0)));
+	exports->Set(String::New("c++callbacks"), callbacks);
+
 //      context->Global()
 	#define function(name) exports->Set(String::NewSymbol(#name), FunctionTemplate::New(name)->GetFunction());
 	function(register_callbacks)
-	function (clipGet)
 //	function(yaui_platform)
 //	function(print)
 /*
@@ -622,8 +599,8 @@ void init(Handle<Object> exports) {
 	function(create_win)
 	function(show)
 	function(hide)
-	function(run)
-	function(run_renders)
+	function(step)
+	function(step_renders)
 	function(print)
 	function(repaint)
 	function(force_repaint)

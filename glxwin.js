@@ -1,5 +1,4 @@
 var glxwin = require('./glxwin.node')
-
 TGLXWin = kindof()
 
 TGLXWin.can.init = function(parent, fontName, fontSize, extraX, tuneY) {
@@ -11,7 +10,7 @@ TGLXWin.can.init = function(parent, fontName, fontSize, extraX, tuneY) {
 TGLXWin.can.setXYWH = function(x, y, w, h) { glxwin.set_xywh(this.handle, x, y, w, h) }
 TGLXWin.can.getXYWH = function() { return glxwin.get_xywh(this.handle) }
 TGLXWin.can.show = function() { glxwin.show(this.handle) }
-TGLXWin.can.run = function() { return glxwin.run(this.handle) }
+TGLXWin.can.step = function() { return glxwin.step(this.handle) }
 TGLXWin.can.crect = function(x, y, w, h, color) { glxwin.crect(this.handle, x, y, w, h, color)  }
 TGLXWin.can.print = function(text, x, y) { glxwin.print(this.handle, text, x, y) }
 TGLXWin.can.fontColor = function(color) { glxwin.font_color(this.handle, color) }
@@ -25,6 +24,13 @@ TGLXWin.can.getXWindowHandle = function() { return glxwin.get_xwindow_handle(thi
 TGLXWin.can.paintBegin = function() { glxwin.paintBegin(this.handle) }
 TGLXWin.can.paintEnd = function() { glxwin.paintEnd(this.handle) }
 TGLXWin.can.setCursor = function(cursor) { glxwin.setCursor(this.handle, cursor) }
+
+glxwin.dispatch = function(hand) {
+	if (hand.call == 'onKey') {
+		var O  = this.findObject(hand.handle)
+		if (O.onKey != undefined) O.onKey(hand.down, hand.char, hand.key, hand.physical)
+	}
+}
 
 glxwin.findObject = function(handle) {
 	for (var i = 0; i < this.all.length; i++) if (this.all[i].handle == handle) return this.all[i]
@@ -45,10 +51,10 @@ glxwin.onMouse = function (handle, button, down, x, y) {
 	if (O.onMouse != undefined) O.onMouse(button, down, x, y)
 }
 
-glxwin.onKey = function (handle, down, char, key, physical) {
-	var O  = this.findObject(handle)
-	if (O.onKey != undefined) O.onKey(down, char, key, physical)
-}
+//glxwin.onKey = function (handle, down, char, key, physical) {
+//	var O  = this.findObject(handle)
+//	if (O.onKey != undefined) O.onKey(down, char, key, physical)
+//}
 
 glxwin.onFocus = function(handle, on) {
 	var O  = this.findObject(handle)
@@ -68,14 +74,27 @@ glxwin.onPipe = function() {
 glxwin.register_callbacks(glxwin)
 
 glxwin.mainLoop = function() {
+	var speed = 100, timer
+	function slowDown() {
+		speed = 100
+		timer = undefined
+	}
 	function go() {
-		glxwin.run()
-//		setTimeout(function() { setImmediate(go) }, 1)
-		setImmediate(go)
+		var event = glxwin.step()
+		if (event) {
+			speed = 1
+			if (timer) clearTimeout(timer)
+			timer = setTimeout(slowDown, 1000)
+			var A = glxwin['c++callbacks']
+			while (A.length > 0) {
+				glxwin.dispatch(A.shift())
+			}
+		}
+		setTimeout(function() { setImmediate(go) }, speed)
 	}
 	function rend() {
-		glxwin.run_renders()
-		setTimeout(rend, 10)
+		glxwin.step_renders()
+		setTimeout(rend, 20)
 	}
 	setImmediate(go)
 	setImmediate(rend)

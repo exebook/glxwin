@@ -76,8 +76,8 @@ struct mess {
 	}
 
 	void init();
-	bool run();
-	void run_renders();
+	bool step();
+	void step_renders();
 	void close();
 
 	win* handle2win(Drawable handle) {
@@ -244,8 +244,8 @@ void resetGL() {
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 }
 
-bool run() {
-	return MESS.run();
+bool step() {
+	return MESS.step();
 }
 
 void paint() {
@@ -400,7 +400,7 @@ void mess::process_timers() {
 	}
 }
 
-void mess::run_renders() {
+void mess::step_renders() {
 	each (i, MESS.all) if (MESS.all[i]->renders > 0) {
 		MESS.all[i]->renders = 0;
 		MESS.all[i]->render();
@@ -413,9 +413,9 @@ void mess::run_renders() {
 	bool physical;
    XEvent event, nev;
 
-bool mess::run() {
+bool mess::step() {
    if (!quit) {
-		if (!XPending(MESS.d)) return quit;
+		if (!XPending(MESS.d)) return false;
 		XNextEvent(MESS.d, &event);
 
 		switch(event.type) {
@@ -537,7 +537,7 @@ bool mess::run() {
          break;
       }
    }
-   return quit;
+   return true;
 }
 
 int add_font(str path, int size) {
