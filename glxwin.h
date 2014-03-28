@@ -68,11 +68,12 @@ struct mess {
 	list <timer> timers; int nearest_timer;
 	list<yaglfont::Font> Fonts;
 	Cursor Cursors[10];
+	Atom XA_WM_DELETE_WINDOW, XA_WM_NORMAL_HINTS;
+   bool quit;
 
-	mess():d(0), nearest_timer(0) { }
+	mess(): quit(0), d(0), nearest_timer(0) { }
 	~mess() {
 		close();
-		printf("shytdavn\n");
 	}
 
 	void init();
@@ -206,9 +207,19 @@ void create() {
 	);
 	set_icon();
 	XSaveContext(MESS.d, window, MESS.xcontext, (XPointer)this);
+   XSetWMProtocols(MESS.d, window, &MESS.XA_WM_DELETE_WINDOW, 1);
+   setSizeSteps(20, 20);
 	MESS.all << this;
 	creating();
 	//	XSetWMProtocols(d, W.win, &(delMsg), 1);
+}
+
+void setSizeSteps(int w, int h) {
+   XSizeHints *hint = XAllocSizeHints();
+   hint->flags = PResizeInc;
+   hint->width_inc = w;
+   hint->height_inc = h;
+   XSetWMSizeHints(MESS.d, window, hint, MESS.XA_WM_NORMAL_HINTS);
 }
 
 void setCursor(int n) {
@@ -370,6 +381,9 @@ void mess::init() {
 	Cursors[4] = XcursorLibraryLoadCursor(MESS.d, "hand1");
 	Cursors[5] = XcursorLibraryLoadCursor(MESS.d, "hand2");
 	Cursors[6] = XcursorLibraryLoadCursor(MESS.d, "grabbing");
+   XA_WM_DELETE_WINDOW = XInternAtom(d, "WM_DELETE_WINDOW", False);
+   XA_WM_NORMAL_HINTS = XInternAtom(d, "WM_NORMAL_HINTS", False);
+   
 }
 
 void mess::close() {
@@ -408,13 +422,12 @@ void mess::step_renders() {
 }
 
 	char keyz[1024] = {0};
-   bool quit = false;
 	win *wnd;
 	bool physical;
    XEvent event, nev;
 
 bool mess::step() {
-   if (!quit) {
+   if (!MESS.quit) {
 		if (!XPending(MESS.d)) return false;
 		XNextEvent(MESS.d, &event);
 
@@ -444,7 +457,7 @@ bool mess::step() {
 			wnd->cursor(event.xmotion.x, event.xmotion.y);
 			break;
       case DestroyNotify:
-         quit = true;
+         MESS.quit = true;
 			wnd = MESS.handle2win(event.xdestroywindow.window);
 			wnd->x_destroy();
          break;
@@ -532,6 +545,13 @@ bool mess::step() {
 			break;
 		case LeaveNotify:
 			break;
+      case ClientMessage:
+			if (event.xclient.data.l[0] == MESS.XA_WM_DELETE_WINDOW) {
+			wnd = MESS.handle2win(event.xclient.window);
+			MESS.remove(wnd);
+			if (!MESS.all == 0) MESS.quit = true;
+			break;
+      }
       default:
          printf("Type %d\n", event.type);
          break;

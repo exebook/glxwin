@@ -24,6 +24,7 @@ TGLXWin.can.getXWindowHandle = function() { return glxwin.get_xwindow_handle(thi
 TGLXWin.can.paintBegin = function() { glxwin.paintBegin(this.handle) }
 TGLXWin.can.paintEnd = function() { glxwin.paintEnd(this.handle) }
 TGLXWin.can.setCursor = function(cursor) { glxwin.setCursor(this.handle, cursor) }
+TGLXWin.can.setSizeSteps = function(w, h) { glxwin.setSizeSteps(this.handle, w, h) }
 
 glxwin.dispatch = function(hand) {
 	if (hand.call == 'onKey') {
@@ -80,6 +81,10 @@ glxwin.mainLoop = function() {
 		timer = undefined
 	}
 	function go() {
+		if (glxwin.x11quit()) {
+			process.exit()
+			return
+		}
 		var event = glxwin.step()
 		if (event) {
 			speed = 1
@@ -93,6 +98,7 @@ glxwin.mainLoop = function() {
 		setTimeout(function() { setImmediate(go) }, speed)
 	}
 	function rend() {
+		if (glxwin.x11quit()) return
 		glxwin.step_renders()
 		setTimeout(rend, 20)
 	}

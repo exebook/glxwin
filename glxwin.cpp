@@ -559,6 +559,19 @@ function(setCursor) {
 	return Undefined();
 }
 
+function (setSizeSteps) {
+	HandleScope handle_scope;
+	v8win *W = (v8win*) HANDLE(a[0]);
+	int w = NUMBER(a[1]);
+	int h = NUMBER(a[2]);
+	W->setSizeSteps(w, h);
+	return Undefined();
+}
+
+function (x11quit) {
+	return Boolean::New(MESS.quit);
+}
+
 void init(Handle<Object> exports) {
 	node_exports = Persistent<Object>::New(Handle<Object>::Cast(exports));
 	exports->Set(String::NewSymbol("hello"), FunctionTemplate::New(Method)->GetFunction());
@@ -568,55 +581,34 @@ void init(Handle<Object> exports) {
 //      context->Global()
 	#define function(name) exports->Set(String::NewSymbol(#name), FunctionTemplate::New(name)->GetFunction());
 	function(register_callbacks)
-//	function(yaui_platform)
-//	function(print)
-/*
-	function(ijs_fileexists)
-	function(ijs_fsize)
-	function(ijs_fopen)
-	function(ijs_fread)
-	function(ijs_fread_utf)
-	function(ijs_fread_utf16)
-	function(ijs_exec_js)
-	function(ijs_fclose)
-	function(ijs_fread32)
-	function(ijs_load)
-	function(ijs_save)
-	*/
 	function(native_sh)
-//	function(native_exec)
-//	function(native_sh_signal)
-//	function(native_sh_async)
-//	function(native_sh_write)
 	function(native_isdir)
 	function(native_readdir)
 	function(native_copy_start)
 	function(native_copy_next)
 	function(v8_exit)
 
-//	function(main_handle)
 	function(get_xwindow_handle)
 	function(create_win)
 	function(show)
 	function(hide)
 	function(step)
 	function(step_renders)
+	function(x11quit)
 	function(print)
 	function(repaint)
 	function(force_repaint)
 	function(text_extent)
 	function(crect)
-//	function(add_timer)
-//	function(del_timer)
 	function(set_xywh)
 	function(get_xywh)
 	function(font_color)
 	function(apply_font)
 	function(color_text)
-//	bind_functions(exports);
 	function (paintBegin)
 	function (paintEnd)
 	function (setCursor)
+	function (setSizeSteps)
 }
 
 NODE_MODULE(glxwin, init)
