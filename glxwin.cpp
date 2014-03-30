@@ -517,7 +517,7 @@ function (native_readdir) {
 		if ((pp & 0001) != 0) p[8] = 'x';
 		Handle<Object> B = Object::New();
 		B->Set(String::New("name"), String::New(dirp->d_name));
-		B->Set(String::New("size"), Integer::New(t.st_size));
+		B->Set(String::New("size"), Number::New(t.st_size));
 		B->Set(String::New("mode"), Integer::New(t.st_mode & 0xfff));
 		B->Set(String::New("flags"), String::New(*p, !p));
 		B->Set(String::New("dir"), Boolean::New(S_ISDIR(t.st_mode)));
