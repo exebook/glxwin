@@ -1,1 +1,1 @@
-{ "main" : "./glxwin.node" }
+{ "main" : "./build/Release/glxwin.node" }
