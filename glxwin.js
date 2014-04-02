@@ -1,4 +1,4 @@
-var glxwin = require('./glxwin.node')
+var glxwin = require('./build/Release/glxwin.node')
 TGLXWin = kindof()
 
 TGLXWin.can.init = function(parent, fontName, fontSize, extraX, tuneY) {
