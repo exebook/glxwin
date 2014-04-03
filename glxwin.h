@@ -159,7 +159,7 @@ Pixmap load_pixmap() {
 	return pixmap;
 }
 
-str DeodarTitle = w2utf(L"Деодар Коммандер");
+//str DeodarTitle = w2utf(L"Деодар Коммандер");
 
 void set_icon() {
 	unsigned int icon_width, icon_height;
