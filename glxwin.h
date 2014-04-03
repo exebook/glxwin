@@ -114,14 +114,6 @@ struct mess {
 	void process_timers();
 } MESS;
 
-struct win {
-//   Atom delMsg;
-   GLXContext glx;
-   GLXDrawable window;
-   double x, y, w, h;
-   XIC ic;
-   str bla;
-   int renders, curfont;
 
 int ICON[16*16] = {
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -141,6 +133,15 @@ int ICON[16*16] = {
 	1,2,2,2,2,2,2,1,1,2,2,2,2,2,2,1,
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 }, ICONCOLOR[6] = {0, 0x44eeff, 0xff, 0xff0000, 0xffff00, 0xffff};
+
+struct win {
+//   Atom delMsg;
+   GLXContext glx;
+   GLXDrawable window;
+   double x, y, w, h;
+   XIC ic;
+   str bla;
+   int renders, curfont;
 
 Pixmap load_pixmap() {
 	int W = 16, H = 16;
