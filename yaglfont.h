@@ -31,7 +31,7 @@ namespace yaglfont {
 
 		void init(int count, int w, int h) {
 			total_glyphs = count; added_glyphs = 0;
-			line_h = h+2;
+			line_h = h+4;
 			wh = calc_square(count, w+1, h+1);
 			PIX = new byte[wh * wh];
 			byte Q = 0;
