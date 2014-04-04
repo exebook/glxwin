@@ -24,7 +24,7 @@
 						#include <GL/glx.h>
 						#include <GL/gl.h>
 							#include <ft2build.h>
-							#include <freetype/freetype.h>
+							#include <freetype.h>
 							#include FT_FREETYPE_H
 						#define UNICODE
 						#include "libosnova.cpp"

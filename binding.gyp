@@ -2,7 +2,7 @@
   "targets": [
     {
 	"target_name": "glxwin",
-	"include_dirs": ["/usr/include/freetype2", "osnova", "extra"],
+	"include_dirs": ["/usr/include/freetype2", "/usr/include/freetype2/freetype", "osnova", "extra"],
 	"sources": [ "glxwin.cpp" ],
 	"cflags": ["-O0 -w -Wfatal-errors -fshort-wchar -g"],
 	"defines": ["UNIX"],
