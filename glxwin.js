@@ -27,10 +27,12 @@ TGLXWin.can.setCursor = function(cursor) { glxwin.setCursor(this.handle, cursor)
 TGLXWin.can.setSizeSteps = function(w, h) { glxwin.setSizeSteps(this.handle, w, h) }
 
 glxwin.dispatch = function(hand) {
-	if (hand.call == 'onKey') {
-		var O  = this.findObject(hand.handle)
+	var O = this.findObject(hand.handle)
+	if (hand.call == 'onPaint') {
+		if (O.onPaint != undefined) { O.paintBegin(); O.onPaint(); O.paintEnd() }
+	} else if (hand.call == 'onKey') {
 		if (O.onKey != undefined) O.onKey(hand.down, hand.char, hand.key, hand.physical)
-	}
+	} else log('dispatch error')
 }
 
 glxwin.findObject = function(handle) {
@@ -62,10 +64,10 @@ glxwin.onFocus = function(handle, on) {
 	if (O.onFocus != undefined) if (O.onFocus(on)) O.repaint()
 }
 
-glxwin.onPaint = function (handle) {
-	var O  = this.findObject(handle)
-	if (O.onPaint != undefined) O.onPaint()
-}
+//glxwin.onPaint = function (handle) {
+//	var O  = this.findObject(handle)
+//	if (O.onPaint != undefined) O.onPaint()
+//}
 
 glxwin.onPipe = function() {
 	var O  = this.findObject(handle)
@@ -97,9 +99,13 @@ glxwin.mainLoop = function() {
 		}
 		setTimeout(function() { setImmediate(go) }, speed)
 	}
+	var AR = glxwin['c++callbacks']
 	function rend() {
 		if (glxwin.x11quit()) return
 		glxwin.step_renders()
+		while (AR.length > 0) {
+			glxwin.dispatch(AR.shift())
+		}
 		setTimeout(rend, 20)
 	}
 	setImmediate(go)

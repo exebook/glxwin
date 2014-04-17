@@ -39,7 +39,9 @@ using namespace v8;
 
 //#include "nativeutil.h"
 
-Persistent<Function> onChar, onCursor, onMouse, onPaint, onKey, onTimer, onSize, onPipe, onFocus;
+Persistent<Function> onChar, onCursor, onMouse, 
+//onPaint, onKey, 
+onTimer, onSize, onPipe, onFocus;
 Persistent<Object> glxwin, node_exports; // наверное это одно и то же
 Persistent<Array> callbacks;
 
@@ -110,13 +112,6 @@ struct inherit(v8win, win) {
 	}
 	on_key {
 		HandleScope handle_scope;
-//		ARGS[0] = Number::New(HANDLE(this));
-//		ARGS[1] = Boolean::New(down);
-//		ARGS[2] = Undefined();
-//		if (charcode != 0) ARGS[2] = String::New((uint16_t*)&charcode, 1);
-//		ARGS[3] = Number::New(key);
-//		ARGS[4] = Number::New(physical);
-
 		Handle<Object> B = Object::New();
 		B->Set(String::New("call"), String::New("onKey"));
 		B->Set(String::New("handle"), Number::New(HANDLE(this)));
@@ -127,27 +122,13 @@ struct inherit(v8win, win) {
 //		Context::GetCurrent()->Global()->Set(String::New("glxwin_key"), B);
 		int len = callbacks->Length();
 		callbacks->Set(len, B);
-//		printf("LEN %i\n", len);
-//		node_exports
-//		return handle_scope.Close(B);
-//	js_call(onKey, 5);
 	}
-//	on_char {
-//		HandleScope handle_scope;
-//		wchar_t c[2] = { ch, 0 };
-//		ARGS[0] = Number::New(HANDLE(this));
-//		ARGS[1] = String::New((uint16_t*)c);
-//		js_call(onChar, 2);
-//	}
 	on_paint {
-//		clear();
-		glXMakeCurrent(MESS.d, window, glx);
-		glLoadIdentity();
-   	HandleScope handle_scope;
-		glColor4f(0, 0, 0, 1);
-		ARGS[0] = Number::New(HANDLE(this));
-		js_call(onPaint, 1);
-		flush();
+		Handle<Object> B = Object::New();
+		B->Set(String::New("call"), String::New("onPaint"));
+		B->Set(String::New("handle"), Number::New(HANDLE(this)));
+		int len = callbacks->Length();
+		callbacks->Set(len, B);
 	}
 
 	on_mouse {
@@ -533,11 +514,11 @@ function (native_readdir) {
 function(register_callbacks) {
 	glxwin = Persistent<Object>::New(Handle<Object>::Cast(a[0]));
 	HandleScope scope;
-	fassign(onPaint);
+//	fassign(onPaint);
 	fassign(onCursor);
 	fassign(onMouse);
-	fassign(onPaint);
-	fassign(onKey);
+//	fassign(onPaint);
+//	fassign(onKey);
 	fassign(onTimer);
 	fassign(onChar);
 	fassign(onSize);
