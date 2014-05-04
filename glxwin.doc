@@ -167,21 +167,24 @@ struct inherit(v8win, win) {
 		//а вот пример фу которая работает по-старому, устанавливаем параметры
 		HandleScope handle_scope;
 		ARGS[0] = Number::New(HANDLE(this));
-		ARGS[1] = Number::New(button);
-		ARGS[2] = Number::New(down);
+		ARGS[1] = Number::New(button); // 0-левая 1-правая 2-средняя(колесо как кнопка), 3-колесо (верх/низ==down:true/false), 10 двойной клик 21-22 колесо-влево-вправо
+//		смотри samples/mouse.deo
+		ARGS[2] = Number::New(down);// true/false
 		ARGS[3] = Number::New(x);
 		ARGS[4] = Number::New(y);
-//		вызываем, 
+//		вызываем, 5 количество передаваемых параметров
 		js_call(onMouse, 5);
 	}
 	on_size {
+//	вызывается если система или юзер поменяли размеры окна
 		HandleScope handle_scope;
 		ARGS[0] = Number::New(HANDLE(this));
-		ARGS[1] = Number::New(w);
+		ARGS[1] = Number::New(w);// новые размеры окна
 		ARGS[2] = Number::New(h);
 		js_call(onSize, 3);
 	}
 	on_cursor {
+//		вызывается каждый раз как указатель мыши двигается по экрану
 		HandleScope handle_scope;
 		ARGS[0] = Number::New(HANDLE(this));
 		ARGS[1] = Number::New(x);
@@ -189,6 +192,7 @@ struct inherit(v8win, win) {
 		js_call(onCursor, 3);
 	}
 	on_focus {
+//		вызывается когда окно стало в фокусе или утеряло его
 		HandleScope handle_scope;
 		ARGS[0] = Number::New(HANDLE(this));
 		ARGS[1] = Boolean::New(on);
@@ -204,6 +208,14 @@ struct inherit(v8win, win) {
 	printf(*w2utf(w));
 	return Undefined();
 }*/
+
+//в node.js нет execSync а иногда оно приходится к месту
+//на маке есть свой клас строк NSString тут можно его совместить с popen()
+//кстати внутрене все строки в v8 это utf16le(aka ucs2)
+//в моей собственой либе str и wstr это байтные-ascii и вордовые строки соответствено.
+//кстати чтобы использовать wchar_t надо ключ компиляции -fshort-wchar иначе они будут не 2 а 4 байта
+//в скором времени в v8 и ноде появится execSync и всё это можно будет просто выкинуть
+
 wstr invoke(str cmd) {
 	wstr R;
 	FILE* pipe = popen(*cmd, "r" );
@@ -243,6 +255,12 @@ function (native_sh) {
 //}
 
 function (create_win) {
+// собствено создание окна, можно игнорировать все параметры, это танцы с бубнами
+//первые парам это хендл окна парента, можно использовать, но деодар пока не использует, ограничивается одним окном
+//второй парам это файл шрифта, скорее всего на маке вы будете использовать не файл шрифта, а его имя
+//пока можно, извините, захардкодить, или из системного реестра прочитать моношириный шрифт по умолчанию
+//третий парам размер шрифта, четвертый и пятый это тонкие подстройки которые вообще не должны быть использованы, но использую потому что не являюсь экспертом в либе freetype
+
 	HandleScope handle_scope;
 	v8win *parent = (v8win*) HANDLE(a[0]);
 	v8win *W = new v8win;
@@ -258,17 +276,27 @@ function (create_win) {
 	return Number::New(HANDLE(W));
 }
 
+//смотрите: glxwin.js:glxwin.mainLoop()
+//та организован main loop как в играх. step() это один шаг проверки всех сообщений.
+//на винде это аналог GetMessage(), если возвращает true значит что то случилось, в противном случае програма засыпает на несколько милисекунд
+//это один шаг для всех окон, (если окон более 1)
+
 function (step) {
 	HandleScope handle_scope;
 	bool result = MESS.step();
 	return Boolean::New(result);
 }
 
+// функция paint() ничего не рисует, а только увеличивает счётчик, а step_renders() прорисовывает те окна где счётчик > 0 и устанавливает счётчик в 0.
+// это называется frame balancing, кажется, то есть если вы вызвали paint() 10 раз подряд за одну тысячную долю секунды, то реальная отрисовка будет только одна
+
 function (step_renders) {
 	HandleScope handle_scope;
 	MESS.step_renders();
 	return Undefined();
 }
+
+//показать show() и спрятать hide() окно
 
 function (show) {
 	HandleScope handle_scope;
@@ -284,6 +312,8 @@ function (hide) {
 	return Undefined();
 }
 
+//увеличить счётчик прорисовок для данного окна
+
 function (repaint) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -291,12 +321,16 @@ function (repaint) {
 	return Undefined();
 }
 
+//прорисовать окно "насильно" прямо сейчас, не используя счётчик прорисовок
+
 function (force_repaint) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
 	W->render();
 	return Undefined();
 }
+
+//это не используется, удалю потом
 
 function (print) {
 	HandleScope handle_scope;
@@ -309,6 +343,8 @@ function (print) {
 	return Undefined();
 }
 
+//не используется, возвращает размер текста в пикселях
+
 function (text_extent) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -319,6 +355,8 @@ function (text_extent) {
 	A->Set(1, Integer::New(N[1]));
 	return handle_scope.Close(A);
 }
+
+//нарисовать прямоугльник обозначеный x,y,x1,y1 и цвет
 
 function (crect) {
 	HandleScope handle_scope;
@@ -332,6 +370,8 @@ function (crect) {
 	W->crect(x, y, x1, y1, color);
 	return Undefined();
 }
+
+//таймеры можно удалить
 /*
 function(native_add_timer) {
 	HandleScope handle_scope;
@@ -350,6 +390,8 @@ function(native_del_timer) {
 	return Undefined();
 }
 */
+
+//установить размеры и положение окна, то есть это resize() & move() в одном флаконе
 function(set_xywh) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -366,6 +408,7 @@ function(set_xywh) {
 	return Undefined();
 }
 
+//получить измерения окна
 function(get_xywh) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -377,6 +420,7 @@ function(get_xywh) {
 	return handle_scope.Close(A);
 }
 
+//установить цвет текста по умолчанию, используется фу print(), (не нужно, было для тестов)
 function(font_color) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -390,6 +434,8 @@ function (yaui_platform) {
 	return String::New("linux");
 }
 */
+
+//ещё одна ненужная фу, использовалась с print(), в деодаре пока один шрифт устанавливаемый при запуске приложения, а цвет задаётся в в самой главной и великой фу color_text()
 function(apply_font) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -411,11 +457,27 @@ function(apply_font) {
 	return Number::New(main_window_handle);
 }*/
 
+//это не используется, для отладки было
+
 function(get_xwindow_handle) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
 	return Number::New((int)(W->window));
 }
+//самая великая фу (по размеру), выводит блок текста, то есть деодар выводит весь экран одним вызовом этой фу:
+//W-хэндл окна
+//x,y в пикселях куда выводить на экране (контексте окна)
+//w,h в символах размер двухмерного массива букв
+//TEXTS[ряд][символ] двухмерный массив букв
+//COLORS[ряд][символ] двухмерный массив цветов
+//пример вызова из JS:
+//	color_text(0, 0, 0, 3, 3, 
+//		[['a','b','c'],['1','2','3'],['x','y','z']],
+//		[[0,0,0],[0xf,0xf,0xf],[0xf000,0xf000,0xf000]]
+//	)
+// цвета упакованы, например белое на красном: 0x0fff000f
+// 0xARGBARGB прозрачность(А) можно не исполнять пока, сам её не допилил как надо (в основном оттого, что не ясно на каком уровне её делать, но в будущем её пригодится, так что можно её выполнить)
+// http://stackoverflow.com/questions/21770799/convert-0x1234-to-0x11223344
 
 function (color_text) {
 	HandleScope handle_scope;
@@ -446,6 +508,7 @@ function (color_text) {
 	return Undefined();
 }
 
+//если ваша платформа нуждается в коде начала и конца отрисовки, то поместите сюда
 function (paintBegin) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -454,7 +517,7 @@ function (paintBegin) {
 	glColor4f(0, 0, 0, 1);
 	return Undefined();
 }
-
+//и сюда
 function (paintEnd) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -462,6 +525,7 @@ function (paintEnd) {
 	return Undefined();
 }
 
+//не надо
 /*function (native_hide_all_children) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -476,6 +540,13 @@ function (native_show_all_children) {
 	return Undefined();
 }
 */
+
+//следущие три функции пока нужны, хотя всё это можно перенести в JS благо нода позволяет всё это сделать, но пока тут, потому-что куда проще было реализовать, предлагаю четыре варианта на выбор
+//1) эти функции почти не меняя (только wstr на NSString) перетаскиваете к себе
+//2) пишете какимито чудными неизвестными мне маковскими методами аналог чтения диры
+//3) удаляете этот код и пишете аналог на JS
+//4) я сам выполняю пункт 3)
+
 function (native_isdir) {
 	HandleScope handle_scope;
 	using namespace unixstuff;
@@ -514,7 +585,7 @@ function (native_readdir) {
 	}
 	Handle<Array> A = Array::New(0);
 	int i = 0;
-	if (path[-1] != '/') path/'/';
+	if (path[-1] != '/') path/'/'; //string[-1] означает последний символ в строке (первый с конца)
 	while ((dirp = readdir(dp)) != NULL) {
 		str s = dirp->d_name;
 		if (s == "." || s == "..") continue;
@@ -562,10 +633,14 @@ function(register_callbacks) {
 	return scope.Close(Undefined());
 }
 
+//это удалить надо
 Handle<Value> Method(const Arguments& args) {
   HandleScope scope;
   return scope.Close(String::New("GLXWIN!"));
 }
+//устанавливаем курсор для данного окна, cursor = 0,1,2,3,4,5,6
+//0-pointer, 1-text,2-up-down, 3-move, 4-hand1 5-hand2 6-grab
+//какие то два из них не используются, надо смотреть (поиск по setCursor *.js)
 
 function(setCursor) {
 	HandleScope handle_scope;
@@ -575,6 +650,7 @@ function(setCursor) {
 	return Undefined();
 }
 
+//это магия XWindows - устанавливаем шаг для ресайза окна, тоесть если шаг=10, то окно может быть 100х100 но не 101х101, наверняка мак это умеет, но как?
 function (setSizeSteps) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -583,12 +659,13 @@ function (setSizeSteps) {
 	W->setSizeSteps(w, h);
 	return Undefined();
 }
-
+//это я использую в main loop чтобы узнавать продолжает ли приложение выдавать сообщения или "вышло". если оно вернуло true то main loop заканчивается
 function (x11quit) {
 	return Boolean::New(MESS.quit);
 }
 
 void init(Handle<Object> exports) {
+//все фу здесь предъявляются  движку v8
 	node_exports = Persistent<Object>::New(Handle<Object>::Cast(exports));
 	exports->Set(String::NewSymbol("hello"), FunctionTemplate::New(Method)->GetFunction());
 	callbacks = Persistent<Array>::New(Handle<Array>::Cast(Array::New(0)));
@@ -628,6 +705,8 @@ void init(Handle<Object> exports) {
 }
 
 NODE_MODULE(glxwin, init)
+
+//далее свалка истории
 
 /*
 
