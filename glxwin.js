@@ -22,18 +22,18 @@ TGLXWin.can.init = function (parent, fontName, fontSize, extraX, tuneY) {
 };
 
 /**
- *
- * @param x
- * @param y
- * @param w
- * @param h
+ * Resize or move current window
+ * @param {number} x
+ * @param {number} y
+ * @param {number} w
+ * @param {number} h
  */
 TGLXWin.can.setXYWH = function (x, y, w, h) {
     glxwin.set_xywh(this.handle, x, y, w, h);
 };
 
 /**
- *
+ * Get current window position
  * @returns {*}
  */
 TGLXWin.can.getXYWH = function () {
@@ -41,14 +41,21 @@ TGLXWin.can.getXYWH = function () {
 };
 
 /**
- *
+ * Show current window
  */
 TGLXWin.can.show = function () {
     glxwin.show(this.handle);
 };
 
 /**
- *
+ * Hide current window
+ */
+TGLXWin.can.hide = function () {
+    glxwin.hide(this.handle);
+};
+
+/**
+ * Check new events in windows. If have new events which needs to be calculated it will return true
  * @returns {*}
  */
 TGLXWin.can.step = function () {
@@ -56,125 +63,78 @@ TGLXWin.can.step = function () {
 };
 
 /**
- *
- * @param x
- * @param y
- * @param w
- * @param h
- * @param color
+ * Draw a rectangle
+ * @param {number} x1 Coordinate of rectangle
+ * @param {number} y1 Coordinate of rectangle
+ * @param {number} x2 Coordinate of rectangle
+ * @param {number} y2 Coordinate of rectangle
+ * @param {number} color
  */
-TGLXWin.can.crect = function (x, y, w, h, color) {
-    glxwin.crect(this.handle, x, y, w, h, color);
+TGLXWin.can.crect = function (x1, y1, x2, y2, color) {
+    glxwin.crect(this.handle, x1, y1, x2, y2, color);
 };
 
 /**
- *
- * @param text
- * @param x
- * @param y
- */
-TGLXWin.can.print = function (text, x, y) {
-    glxwin.print(this.handle, text, x, y);
-};
-
-/**
- *
- * @param color
- */
-TGLXWin.can.fontColor = function (color) {
-    glxwin.font_color(this.handle, color);
-};
-
-/**
- *
- * @param name
- * @param size
- * @param color
- * @param bgcolor
- * @returns {*}
- */
-TGLXWin.can.applyFont = function (name, size, color, bgcolor) {
-    return glxwin.apply_font(this.handle, name, size, color, bgcolor);
-};
-
-/**
- *
- * @param txt
- * @returns {*}
- */
-TGLXWin.can.textExtent = function (txt) {
-    return glxwin.text_extent(this.handle, txt);
-};
-
-/**
- *
+ * Increase draw counter for current window
  */
 TGLXWin.can.repaint = function () {
     glxwin.repaint(this.handle);
 };
 
 /**
- *
+ * Forced redrawing current window ignoring draw counter
  */
 TGLXWin.can.forceRepaint = function () {
     glxwin.force_repaint(this.handle);
 };
 
-/**
- *
- */
-TGLXWin.can.hide = function () {
-    glxwin.hide(this.handle);
-};
+
 
 /**
  *
- * @param x
- * @param y
- * @param w
- * @param h
- * @param TXT
- * @param CLR
+ * @param {number} x Coordinate X for drawing text sets in Pixels
+ * @param {number} y Coordinate Y for drawing text sets in Pixels
+ * @param {number} w Size in characters two-dimensional array of letters
+ * @param {number} h Size in characters two-dimensional array of letters
+ * @param {Array} TXT Array of texts
+ * @param {Array} CLR Array of colors
  */
 TGLXWin.can.colorText = function (x, y, w, h, TXT, CLR) {
     glxwin.color_text(this.handle, x, y, w, h, TXT, CLR);
 };
 
 /**
- *
- * @returns {*}
- * not tested yet
- */
-TGLXWin.can.getXWindowHandle = function () {
-    return glxwin.get_xwindow_handle(this.handle);
-};
-
-/**
- *
+ * For begin code printing.(Sometimes it need depending on platform)
  */
 TGLXWin.can.paintBegin = function () {
     glxwin.paintBegin(this.handle);
 };
 
 /**
- *
+ * For end code printing.(Sometimes it need depending on platform)
  */
 TGLXWin.can.paintEnd = function () {
     glxwin.paintEnd(this.handle);
 };
 
 /**
- *
- * @param cursor
+ * Set cursor to current windows.
+ * @param {number} cursor   0 - pointer
+ *                          1 - text
+ *                          2 - up-to-down
+ *                          3 - move
+ *                          4 - hand1
+ *                          5 - hand2
+ *                          6 - grab
  */
 TGLXWin.can.setCursor = function (cursor) {
     glxwin.setCursor(this.handle, cursor);
 };
 
 /**
- *
- * @param w
- * @param h
+ * Set step for resize window.
+ * @param {number} w
+ * @param {number} h
  */
 TGLXWin.can.setSizeSteps = function (w, h) {
     glxwin.setSizeSteps(this.handle, w, h)
@@ -255,13 +215,6 @@ glxwin.onMouse = function (handle, button, down, x, y) {
     }
 }
 
-/*
-glxwin.onKey = function (handle, down, char, key, physical) {
-	var O  = this.findObject(handle)
-	if (O.onKey != undefined) O.onKey(down, char, key, physical)
-};
-*/
-
 /**
  *
  * @param handle
@@ -273,13 +226,6 @@ glxwin.onFocus = function (handle, on) {
         if (O.onFocus(on)) O.repaint();
     }
 };
-
-/*
-glxwin.onPaint = function (handle) {
-	var O  = this.findObject(handle)
-	if (O.onPaint != undefined) O.onPaint()
-};
-*/
 
 /**
  *
@@ -355,19 +301,3 @@ glxwin.mainLoop = function () {
 };
 
 module.exports = glxwin;
-
-/*
- // MINIMAL PROGRAM
- glxwin = require('./glxwin/glxwin.js')
-
- var w = TGLXWin.create()
- w.setXYWH(0, 0, 100, 100)
- w.onKey = function(K) {
- console.log(K)
- }
- w.onPaint = function() {
- w.crect(0, 0, 1000, 1000, 0xff000000)
- }
- w.show()
- glxwin.mainLoop()
- */
