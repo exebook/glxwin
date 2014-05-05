@@ -9,7 +9,7 @@ TGLXWin = kindof();
  * @param extraX
  * @param tuneY
  */
-TGLXWin.can.init = function (parent, fontName, fontSize, extraX, tuneY) {
+TGLXWin.can.init = function(parent, fontName, fontSize, extraX, tuneY) {
     this.handle = glxwin.create_win(undefined, fontName, fontSize, extraX, tuneY);
     if (glxwin.mainWindow == undefined) {
         glxwin.mainWindow = this;
@@ -28,37 +28,37 @@ TGLXWin.can.init = function (parent, fontName, fontSize, extraX, tuneY) {
  * @param {number} w
  * @param {number} h
  */
-TGLXWin.can.setXYWH = function (x, y, w, h) {
+TGLXWin.can.setXYWH = function(x, y, w, h) {
     glxwin.set_xywh(this.handle, x, y, w, h);
 };
 
 /**
  * Get current window position
- * @returns {*}
+ * @return {*}
  */
-TGLXWin.can.getXYWH = function () {
+TGLXWin.can.getXYWH = function() {
     return glxwin.get_xywh(this.handle);
 };
 
 /**
  * Show current window
  */
-TGLXWin.can.show = function () {
+TGLXWin.can.show = function() {
     glxwin.show(this.handle);
 };
 
 /**
  * Hide current window
  */
-TGLXWin.can.hide = function () {
+TGLXWin.can.hide = function() {
     glxwin.hide(this.handle);
 };
 
 /**
  * Check new events in windows. If have new events which needs to be calculated it will return true
- * @returns {*}
+ * @return {*}
  */
-TGLXWin.can.step = function () {
+TGLXWin.can.step = function() {
     return glxwin.step(this.handle);
 };
 
@@ -70,21 +70,21 @@ TGLXWin.can.step = function () {
  * @param {number} y2 Coordinate of rectangle
  * @param {number} color
  */
-TGLXWin.can.crect = function (x1, y1, x2, y2, color) {
+TGLXWin.can.crect = function(x1, y1, x2, y2, color) {
     glxwin.crect(this.handle, x1, y1, x2, y2, color);
 };
 
 /**
  * Increase draw counter for current window
  */
-TGLXWin.can.repaint = function () {
+TGLXWin.can.repaint = function() {
     glxwin.repaint(this.handle);
 };
 
 /**
  * Forced redrawing current window ignoring draw counter
  */
-TGLXWin.can.forceRepaint = function () {
+TGLXWin.can.forceRepaint = function() {
     glxwin.force_repaint(this.handle);
 };
 
@@ -99,21 +99,21 @@ TGLXWin.can.forceRepaint = function () {
  * @param {Array} TXT Array of texts
  * @param {Array} CLR Array of colors
  */
-TGLXWin.can.colorText = function (x, y, w, h, TXT, CLR) {
+TGLXWin.can.colorText = function(x, y, w, h, TXT, CLR) {
     glxwin.color_text(this.handle, x, y, w, h, TXT, CLR);
 };
 
 /**
  * For begin code printing.(Sometimes it need depending on platform)
  */
-TGLXWin.can.paintBegin = function () {
+TGLXWin.can.paintBegin = function() {
     glxwin.paintBegin(this.handle);
 };
 
 /**
  * For end code printing.(Sometimes it need depending on platform)
  */
-TGLXWin.can.paintEnd = function () {
+TGLXWin.can.paintEnd = function() {
     glxwin.paintEnd(this.handle);
 };
 
@@ -127,7 +127,7 @@ TGLXWin.can.paintEnd = function () {
  *                          5 - hand2
  *                          6 - grab
  */
-TGLXWin.can.setCursor = function (cursor) {
+TGLXWin.can.setCursor = function(cursor) {
     glxwin.setCursor(this.handle, cursor);
 };
 
@@ -136,15 +136,15 @@ TGLXWin.can.setCursor = function (cursor) {
  * @param {number} w
  * @param {number} h
  */
-TGLXWin.can.setSizeSteps = function (w, h) {
-    glxwin.setSizeSteps(this.handle, w, h)
+TGLXWin.can.setSizeSteps = function(w, h) {
+    glxwin.setSizeSteps(this.handle, w, h);
 };
 
 /**
  *
  * @param hand
  */
-glxwin.dispatch = function (hand) {
+glxwin.dispatch = function(hand) {
     var O = this.findObject(hand.handle);
     if (hand.call == 'onPaint') {
         if (O.onPaint != undefined) {
@@ -164,9 +164,9 @@ glxwin.dispatch = function (hand) {
 /**
  *
  * @param handle
- * @returns {*}
+ * @return {*}
  */
-glxwin.findObject = function (handle) {
+glxwin.findObject = function(handle) {
     for (var i = 0; i < this.all.length; i++) {
         if (this.all[i].handle == handle) {
             return this.all[i];
@@ -180,7 +180,7 @@ glxwin.findObject = function (handle) {
  * @param x
  * @param y
  */
-glxwin.onCursor = function (handle, x, y) {
+glxwin.onCursor = function(handle, x, y) {
     var O = this.findObject(handle);
     if (O.onCursor != undefined) {
         O.onCursor(x, y);
@@ -193,7 +193,7 @@ glxwin.onCursor = function (handle, x, y) {
  * @param w
  * @param h
  */
-glxwin.onSize = function (handle, w, h) {
+glxwin.onSize = function(handle, w, h) {
     var O = this.findObject(handle);
     if (O.onSize != undefined) {
         O.onSize(w, h);
@@ -208,19 +208,19 @@ glxwin.onSize = function (handle, w, h) {
  * @param x
  * @param y
  */
-glxwin.onMouse = function (handle, button, down, x, y) {
+glxwin.onMouse = function(handle, button, down, x, y) {
     var O = this.findObject(handle);
     if (O.onMouse != undefined) {
         O.onMouse(button, down, x, y);
     }
-}
+};
 
 /**
  *
  * @param handle
  * @param on
  */
-glxwin.onFocus = function (handle, on) {
+glxwin.onFocus = function(handle, on) {
     var O = this.findObject(handle);
     if (O.onFocus != undefined) {
         if (O.onFocus(on)) O.repaint();
@@ -230,7 +230,7 @@ glxwin.onFocus = function (handle, on) {
 /**
  *
  */
-glxwin.onPipe = function () {
+glxwin.onPipe = function() {
     var O = this.findObject(handle);
     if (O.onPipe != undefined) {
         O.onPipe();
@@ -242,7 +242,7 @@ glxwin.register_callbacks(glxwin);
 /**
  *
  */
-glxwin.mainLoop = function () {
+glxwin.mainLoop = function() {
     var speed = 100, timer;
 
     /**
@@ -272,12 +272,12 @@ glxwin.mainLoop = function () {
             var A = glxwin['c++callbacks'];
 
             while (A.length > 0) {
-                glxwin.dispatch(A.shift())
+                glxwin.dispatch(A.shift());
             }
         }
-        setTimeout(function () {
+        setTimeout(function() {
             setImmediate(go);
-        }, speed)
+        }, speed);
     }
 
     var AR = glxwin['c++callbacks'];
