@@ -1,1 +1,4 @@
-{ "main" : "./glxwin.js" }
+{
+  "name": "glxwin",
+  "main" : "./glxwin.js"
+}
