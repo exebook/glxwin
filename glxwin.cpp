@@ -32,6 +32,7 @@ NODE_MODULE(glxwin, init)
 #define fassign(name) name = Persistent<Function>::New(Handle<Function>::Cast(Handle<Object>::Cast(a[0])->Get(String::NewSymbol(#name))));
 
 #include <node.h>
+#include <node_buffer.h>
 #include <v8.h>
 #include "glxwin.h"
 
@@ -412,6 +413,37 @@ function (color_text) {
 	return Undefined();
 }
 
+function (color_text_new) {
+	// this was created to replace color_text
+	// Arrayof {} was very slow compared
+	// to typed array/buffer
+	HandleScope handle_scope;
+	v8win *W = (v8win*) HANDLE(a[0]);
+	yaglfont::Font *f = & MESS.Fonts[W->curfont];
+	int x = NUMBER(a[1]);
+	int y = NUMBER(a[2]);
+	int w = NUMBER(a[3]);
+	int h = NUMBER(a[4]);
+	glLoadIdentity();
+	glTranslatef(x, y, 0);
+	word *T = (word*)node::Buffer::Data(a[5]);
+	u32 *C = (u32*)node::Buffer::Data(a[6]);
+	u32 *CLR = C;
+	int n = 0;
+	wstr s;
+	s.p->size = w;
+	s.p->p = (wchar_t*)T;
+	for (int Y = 0; Y < h; Y++) {
+		
+		draw_line(*f, s, CLR);
+		glTranslatef(0, f->metric.h, 0);
+		CLR += w;
+		s.p->p += w;
+	}
+	s.p->p = 0; s.p->size = 0;
+	return Undefined();
+}
+
 function (paintBegin) {
 	HandleScope handle_scope;
 	v8win *W = (v8win*) HANDLE(a[0]);
@@ -586,6 +618,7 @@ void init(Handle<Object> exports) {
 	function(font_color)
 	function(apply_font)
 	function(color_text)
+	function(color_text_new)
 	function (paintBegin)
 	function (paintEnd)
 	function (setCursor)

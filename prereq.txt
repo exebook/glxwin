@@ -1,0 +1,4 @@
+sudo aptitude install libX11-dev
+sudo aptitude install libxcursor-dev
+sudo aptitude install libgl1-mesa-dev
+sudo aptitude install libfreetype6-dev

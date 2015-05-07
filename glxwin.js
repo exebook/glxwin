@@ -7,7 +7,11 @@ TGLXWin.can.init = function(parent, fontName, fontSize, extraX, tuneY) {
 	if (glxwin.all == undefined) glxwin.all = [this]
 	else glxwin.all.push(this)
 }
-TGLXWin.can.setXYWH = function(x, y, w, h) { glxwin.set_xywh(this.handle, x, y, w, h) }
+TGLXWin.can.setXYWH = function(x, y, w, h) {
+	glxwin.set_xywh(this.handle, x, y, w, h)
+	glxwin.onSize(this.handle, w, h)
+	
+}
 TGLXWin.can.getXYWH = function() { return glxwin.get_xywh(this.handle) }
 TGLXWin.can.show = function() { glxwin.show(this.handle) }
 TGLXWin.can.step = function() { return glxwin.step(this.handle) }
@@ -20,6 +24,7 @@ TGLXWin.can.repaint = function() { glxwin.repaint(this.handle) }
 TGLXWin.can.forceRepaint = function() { glxwin.force_repaint(this.handle) }
 TGLXWin.can.hide = function() { glxwin.hide(this.handle) }
 TGLXWin.can.colorText = function(x, y, w, h, TXT, CLR) { glxwin.color_text(this.handle, x, y, w, h, TXT, CLR) }
+TGLXWin.can.colorTextNew = function(x, y, w, h, TXT, CLR) { glxwin.color_text_new(this.handle, x, y, w, h, TXT, CLR) }
 TGLXWin.can.getXWindowHandle = function() { return glxwin.get_xwindow_handle(this.handle) }//not tested
 TGLXWin.can.paintBegin = function() { glxwin.paintBegin(this.handle) }
 TGLXWin.can.paintEnd = function() { glxwin.paintEnd(this.handle) }

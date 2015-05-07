@@ -1,3 +1,5 @@
+int zzz = 0;
+
 namespace yaglfont {
 	double FIX = 1.0;
 	FT_Library  library = 0;
@@ -49,7 +51,8 @@ namespace yaglfont {
 		void add(char_glass *G, byte *A) {
 			if ((add_at_x + G->w) >= wh-10) { // can -10 be zero or -1?
 				add_at_x = 0, add_at_y += line_h;
-				if (add_at_y + line_h > wh) printf("font does not fit into the texture\n"), print(), exit(1);
+				if (add_at_y + line_h > wh)
+					printf("font does not fit into the texture\n"), print(), exit(1);
 			}
 			G->y1 =  add_at_y / (double)wh;
 			G->y2 =  (add_at_y + G->h) / (double)wh;
@@ -110,8 +113,12 @@ namespace yaglfont {
 			char_glass *G = db[ch];
 			FT_GlyphSlot slot;
 			int e;
-			e = FT_Load_Char(face, ch, FT_LOAD_TARGET_LIGHT);//FT_LOAD_DEFAULT );
-			e = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+			e = FT_Load_Char(face, ch, FT_LOAD_TARGET_LIGHT
+			// | FT_LOAD_FORCE_AUTOHINT
+			);//FT_LOAD_DEFAULT );
+			e = FT_Render_Glyph(face->glyph, 
+				FT_RENDER_MODE_NORMAL
+			);
 			slot = face->glyph;
 			G->w = slot->bitmap.width, G->h = slot->bitmap.rows;
 			G->full = slot->metrics.horiAdvance / 64;
@@ -151,13 +158,19 @@ namespace yaglfont {
 
 	int draw_char(Font &F, int ch, int x) {
 		char_glass *G = F.db[ch];
-		if (G == 0) G = F.db[32];//return F.db[32]->full + F.extra_inter_char;
+		if (G == 0) {
+			printf(".%i\n", zzz++);
+			return F.db[32]->full + F.extra_inter_char;
+		}
+		F.db[32];//
 		if (ch < 32) ch = 32;
+		int R = 3;
 		if (ch > 32) {
 			if (G->loaded == false) prepare_char(F, G, ch);
 			double w1 = G->w; int h1 = G->h;
 			double y = -G->ascent + F.metric.a;
-			y += F.tune_y; // TODO: know more about metrics and sizes do some tests with many fonts
+			y += F.tune_y;
+			// TODO: know more about metrics and sizes do some tests with many fonts
 			x += G->left + F.extra_inter_char;
 			glTexCoord2f(G->x1, G->y1); glVertex2f(0+x, 0+y);
 			glTexCoord2f(G->x2, G->y1); glVertex2f(w1+x, 0+y);
@@ -166,8 +179,9 @@ namespace yaglfont {
 			glTexCoord2f(G->x2, G->y2); glVertex2f(w1+x, h1+y);
 			glTexCoord2f(G->x1, G->y2); glVertex2f(0+x, h1+y);
 			glTexCoord2f(G->x1, G->y1); glVertex2f(0+x, 0+y);
-		} else return F.db[32]->full + F.extra_inter_char;
-		return G->full + F.extra_inter_char;
+			R = G->full + F.extra_inter_char;
+		} else R = F.db[32]->full + F.extra_inter_char;
+		return R;
 	}
 
 	int* size_str(Font &F, wstr s) {
@@ -205,7 +219,8 @@ namespace yaglfont {
 		glEnd();
 	}
 
-	void draw_line(Font &F, wstr s, unsigned int *colors) { // color converted: 0x10001fff -> 0xee00000+ 0xeeffffff
+	void draw_line(Font &F, wstr s, unsigned int *colors) {
+		// color converted: 0x10001fff -> 0xee00000+ 0xeeffffff
 		glDisable( GL_TEXTURE_2D );
 		size_str(F, s);
 		glBegin(GL_TRIANGLES);
@@ -213,15 +228,18 @@ namespace yaglfont {
 		int x = 0, h1 = F.metric.h;
 		each (i, s) {
 			c = colors[i];
-			cb = (c & 0xf0000) >> 16 | (c & 0xff0000) >> 12 | (c & 0xff00000) >> 8 | (c & 0xf000000) >> 4 | (~c & 0xf0000000) >> 0 | (~c & 0xf0000000) >> 4;
+			cb = (c & 0xf0000) >> 16 | (c & 0xff0000) >> 12
+			| (c & 0xff00000) >> 8 | (c & 0xf000000) >> 4
+			| (~c & 0xf0000000) >> 0 | (~c & 0xf0000000) >> 4;
 			glColor4ubv((GLubyte*) & cb);
 			int ch = s[i]; if (ch < 32 || F.db[ch] == 0) ch = 32;
 			char_glass *G = F.db[ch];
-//			if (G == 0) G = F.db[32];
+			if (G == 0) G = F.db[32];
 			{
 				int w1 = F.db[ch]->full + F.extra_inter_char;
 				int y = 0;
-				glVertex2i(0+x, 0+y); glVertex2i(w1+x, 0+y); glVertex2i(w1+x, h1+y); glVertex2i(w1+x, h1+y); glVertex2i(0+x, h1+y); glVertex2i(0+x, 0+y);
+				glVertex2i(0+x, 0+y); glVertex2i(w1+x, 0+y); glVertex2i(w1+x, h1+y);
+				glVertex2i(w1+x, h1+y); glVertex2i(0+x, h1+y); glVertex2i(0+x, 0+y);
 				x += w1;
 			}
 		}
@@ -232,9 +250,11 @@ namespace yaglfont {
 		glBegin(GL_TRIANGLES);
 		each (i, s) {
 			c = colors[i];
-			cf = (c & 0xff) << 4 | c & 0xf | (c & 0xff0) << 8 | (c & 0xf00) << 12 | (~c & 0xf000) << 16 | (~c & 0xf000) << 12;
+			cf = (c & 0xff) << 4 | c & 0xf | (c & 0xff0) << 8
+			| (c & 0xf00) << 12 | (~c & 0xf000) << 16 | (~c & 0xf000) << 12;
 			glColor4ubv((GLubyte*) & cf);
-			x += draw_char(F, s[i], x);
+			int X = draw_char(F, s[i], x);
+			x += X;
 		}
 		glEnd();
 		glBindTexture( GL_TEXTURE_2D, -1 );
