@@ -159,7 +159,7 @@ namespace yaglfont {
 	int draw_char(Font &F, int ch, int x) {
 		char_glass *G = F.db[ch];
 		if (G == 0) {
-			printf(".%i\n", zzz++);
+//			printf(".%i\n", zzz++);
 			return F.db[32]->full + F.extra_inter_char;
 		}
 		F.db[32];//
